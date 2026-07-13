@@ -30,9 +30,10 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #F5F7FA; color: #1D2129; font-size: 18px; }
-        .pantalla { display: none; }
+        .pantalla { display: none !important; }
         .activa { display: block !important; }
-        .boton-grande { padding: 18px 24px; font-size: 20px; font-weight: 600; border-radius: 16px; border: none; width: 100%; margin: 10px 0; cursor: pointer; }
+        .boton-grande { padding: 18px 24px; font-size: 20px; font-weight: 600; border-radius: 16px; border: none; width: 100%; margin: 10px 0; cursor: pointer; transition: all 0.2s; }
+        .boton-grande:active { transform: scale(0.98); }
         .boton-primario { background: #165DFF; color: white; }
         .boton-secundario { background: #36CFC9; color: white; }
         .boton-alerta { background: #FF7D00; color: white; }
@@ -52,13 +53,13 @@
         <p class="text-xl text-gray-600">Movilidad inclusiva al alcance de todos</p>
     </div>
     <div class="caja max-w-md w-full">
-        <button onclick="irAMapa()" class="boton-grande boton-primario">
+        <button onclick="console.log('Botón mapa presionado'); irAMapa()" class="boton-grande boton-primario">
             <i class="fa fa-map-marker mr-2"></i> Ver buses accesibles
         </button>
-        <button onclick="irASolicitud()" class="boton-grande boton-secundario">
+        <button onclick="console.log('Botón solicitud presionado'); irASolicitud()" class="boton-grande boton-secundario">
             <i class="fa fa-wheelchair mr-2"></i> Solicitar asistencia
         </button>
-        <button onclick="irAInformacion()" class="boton-grande bg-gray-100 text-primario">
+        <button onclick="console.log('Botón info presionado'); irAInformacion()" class="boton-grande bg-gray-100 text-primario">
             <i class="fa fa-info-circle mr-2"></i> ¿Cómo funciona?
         </button>
     </div>
@@ -90,7 +91,7 @@
     </div>
 </div>
 
-<!-- PANTALLA DE SOLICITUD DE ASISTENCIA -->
+<!-- PANTALLA DE SOLICITUD -->
 <div id="pantallaSolicitud" class="pantalla">
     <div class="bg-primario text-white p-5 flex items-center">
         <button onclick="volverInicio()" class="text-2xl mr-4"><i class="fa fa-arrow-left"></i></button>
@@ -101,20 +102,20 @@
         <input type="text" id="nombre" placeholder="Escribe tu nombre" required>
         <label class="etiqueta">Tu ubicación actual</label>
         <input type="text" id="ubicacion" placeholder="Ej: Parada Av. 12 de Octubre" required>
-        <label class="etiqueta">Destino al que vas</label>
+        <label class="etiqueta">Destino</label>
         <input type="text" id="destino" placeholder="Ej: Hospital General" required>
         <label class="etiqueta">Ruta que necesitas</label>
         <input type="text" id="ruta" placeholder="Ej: Ruta 12" required>
-        <label class="etiqueta">Tipo de ayuda que necesitas</label>
+        <label class="etiqueta">Tipo de ayuda</label>
         <select id="tipoAyuda" required>
-            <option value="">Selecciona una opción</option>
-            <option value="rampa">Ayuda con la rampa</option>
-            <option value="silla">Ayuda con silla de ruedas</option>
-            <option value="mayor">Soy adulto mayor</option>
+            <option value="">Selecciona</option>
+            <option value="rampa">Ayuda con rampa</option>
+            <option value="silla">Silla de ruedas</option>
+            <option value="mayor">Adulto mayor</option>
             <option value="otro">Otra ayuda</option>
         </select>
-        <label class="etiqueta">Detalles adicionales (opcional)</label>
-        <textarea id="detalles" rows="2" placeholder="Información extra que debamos saber"></textarea>
+        <label class="etiqueta">Detalles</label>
+        <textarea id="detalles" rows="2" placeholder="Información adicional"></textarea>
     </div>
     <div class="px-4">
         <button onclick="enviarSolicitud()" class="boton-grande boton-alerta">
@@ -123,33 +124,29 @@
     </div>
 </div>
 
-<!-- PANTALLA DE INFORMACIÓN -->
+<!-- PANTALLA INFORMACIÓN -->
 <div id="pantallaInformacion" class="pantalla">
     <div class="bg-primario text-white p-5 flex items-center">
         <button onclick="volverInicio()" class="text-2xl mr-4"><i class="fa fa-arrow-left"></i></button>
         <h2 class="text-xl font-bold">¿Cómo funciona?</h2>
     </div>
     <div class="caja">
-        <h3 class="font-bold text-lg mb-3">📌 Pasos sencillos</h3>
         <ol class="space-y-3 text-gray-700">
-            <li>1. Selecciona <strong>Ver buses accesibles</strong> para ver qué unidades tienen rampa disponible.</li>
-            <li>2. Si necesitas ayuda, presiona <strong>Solicitar asistencia</strong>.</li>
-            <li>3. Llena tus datos y envíalo: el conductor recibirá tu aviso por WhatsApp.</li>
-            <li>4. El conductor te esperará y bajará la rampa para abordar con seguridad.</li>
+            <li>1. Verifica qué buses tienen rampa disponible.</li>
+            <li>2. Envía tu solicitud de asistencia.</li>
+            <li>3. El conductor recibe el aviso y te espera.</li>
+            <li>4. Aborda de forma segura.</li>
         </ol>
-        <hr class="my-5">
-        <h3 class="font-bold text-lg mb-3">🎯 Nuestro objetivo</h3>
-        <p class="text-gray-700">Hacer que el transporte público sea seguro y accesible para todas las personas en Ecuador.</p>
     </div>
 </div>
 
-<!-- PANTALLA DE CONFIRMACIÓN -->
+<!-- PANTALLA CONFIRMACIÓN -->
 <div id="pantallaConfirmacion" class="pantalla">
     <div class="min-h-screen flex flex-col justify-center items-center p-6 text-center">
         <div class="caja max-w-md w-full">
             <i class="fa fa-check-circle text-6xl text-exito mb-4"></i>
             <h2 class="text-2xl font-bold mb-3">¡Solicitud enviada!</h2>
-            <p class="text-gray-600 mb-6">El equipo de AccesBus ya recibió tu aviso. Espera con tranquilidad, te ayudarán a subir.</p>
+            <p class="text-gray-600 mb-6">El conductor ya sabe que necesitas ayuda.</p>
             <button onclick="volverInicio()" class="boton-grande boton-primario">Volver al inicio</button>
         </div>
     </div>
@@ -159,38 +156,44 @@
 const URL_SERVIDOR = window.location.origin;
 let mapaCargado = false;
 
-// Cambiar pantallas CORREGIDO
+// FUNCIONES DE NAVEGACIÓN SIN ERRORES
 function irAMapa() {
+    console.log("Cambiando a pantalla mapa");
     document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+    document.getElementById('pantallaInicio').classList.remove('activa');
     document.getElementById('pantallaMapa').classList.add('activa');
     if (!mapaCargado) iniciarMapa();
 }
+
 function irASolicitud() {
+    console.log("Cambiando a pantalla solicitud");
     document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+    document.getElementById('pantallaInicio').classList.remove('activa');
     document.getElementById('pantallaSolicitud').classList.add('activa');
 }
+
 function irAInformacion() {
+    console.log("Cambiando a pantalla información");
     document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+    document.getElementById('pantallaInicio').classList.remove('activa');
     document.getElementById('pantallaInformacion').classList.add('activa');
 }
+
 function volverInicio() {
+    console.log("Volviendo al inicio");
     document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
     document.getElementById('pantallaInicio').classList.add('activa');
 }
 
-// Iniciar mapa sin errores
+// CARGAR MAPA
 function iniciarMapa() {
-    const mapa = L.map('mapa').setView([-0.1807, -78.4678], 13); // Ubicación Quito
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© AccesBus | OpenStreetMap'
-    }).addTo(mapa);
-    // Marcadores de buses accesibles
+    const mapa = L.map('mapa').setView([-0.1807, -78.4678], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
     L.marker([-0.1820, -78.4690]).addTo(mapa).bindPopup('Ruta 12 - Con rampa ✅');
-    L.marker([-0.1790, -78.4650]).addTo(mapa).bindPopup('Ruta 05 - Con rampa ✅');
     mapaCargado = true;
 }
 
-// Enviar solicitud
+// ENVIAR SOLICITUD
 async function enviarSolicitud() {
     const datos = {
         nombre: document.getElementById('nombre').value.trim(),
@@ -201,7 +204,7 @@ async function enviarSolicitud() {
         detalles: document.getElementById('detalles').value.trim()
     };
     if (!datos.nombre || !datos.ubicacion || !datos.destino || !datos.ruta || !datos.tipoAyuda) {
-        alert("⚠️ Completa todos los campos obligatorios");
+        alert("⚠️ Completa todos los campos");
         return;
     }
     try {
@@ -215,11 +218,9 @@ async function enviarSolicitud() {
             window.open(json.enlaceWhatsApp, "_blank");
             document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
             document.getElementById('pantallaConfirmacion').classList.add('activa');
-        } else {
-            alert("❌ No se pudo enviar la solicitud");
         }
     } catch {
-        alert("❌ Sin conexión con el servidor");
+        alert("❌ Sin conexión");
     }
 }
 </script>
