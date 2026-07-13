@@ -9,11 +9,22 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        tailwind.config = { theme: { extend: { colors: { primario: '#165DFF', exito: '#00B42A', alerta: '#FF7D00' } } } };
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primario: '#165DFF',
+                        exito: '#00B42A',
+                        alerta: '#FF7D00'
+                    }
+                }
+            }
+        };
     </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
-        .pantalla { display: none; width: 100%; min-height: 100vh; background: #F5F7FA; }
+        /* REGLA DE ORO: SOLO UNA PANTALLA VISIBLE */
+        .pantalla { display: none !important; width: 100%; min-height: 100vh; background: #F5F7FA; }
         .activa { display: block !important; }
         .boton { width: 100%; padding: 18px; font-size: 20px; font-weight: bold; border: none; border-radius: 16px; cursor: pointer; margin: 10px 0; }
         .boton-azul { background: #165DFF; color: white; }
@@ -22,7 +33,7 @@
         .boton-buscar { width: auto; padding: 14px 20px; font-size: 18px; margin: 0; }
         .caja { background: white; border-radius: 16px; padding: 24px; margin: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
         .cabecera { background: #165DFF; color: white; padding: 20px; display: flex; align-items: center; }
-        #mapaAcces { height: 55vh; margin: 16px; border-radius: 16px; }
+        #contenedor-mapa { height: 55vh; margin: 16px; border-radius: 16px; }
         input, select, textarea { width: 100%; padding: 16px; margin: 8px 0; border: 2px solid #E5E6EB; border-radius: 12px; font-size: 18px; }
         .portada { background: #165DFF; color: white; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px; }
         .ruta-item { border: 1px solid #E5E6EB; border-radius: 12px; padding: 16px; margin: 12px 0; cursor: pointer; transition: all 0.2s; }
@@ -38,7 +49,7 @@
     <i class="fa fa-bus text-6xl mb-4"></i>
     <h1 class="text-4xl font-bold mb-2">AccesBus</h1>
     <p class="text-xl mb-8">Movilidad inclusiva al alcance de todos</p>
-    <button onclick="irA('menu')" class="boton bg-white text-primario">INICIAR</button>
+    <button onclick="irPantalla('menu')" class="boton bg-white text-primario">INICIAR</button>
 </div>
 
 <!-- 2. MENÚ PRINCIPAL -->
@@ -48,16 +59,16 @@
         <h2 class="text-3xl font-bold text-primario">Menú Principal</h2>
     </div>
     <div class="max-w-md mx-auto">
-        <button onclick="irA('mapa')" class="boton boton-azul">Ver buses accesibles</button>
-        <button onclick="irA('solicitud')" class="boton boton-verde">Solicitar asistencia</button>
-        <button onclick="irA('info')" class="boton bg-gray-100 text-primario">¿Cómo funciona?</button>
+        <button onclick="irPantalla('pantalla-mapa')" class="boton boton-azul">Ver buses accesibles</button>
+        <button onclick="irPantalla('solicitud')" class="boton boton-verde">Solicitar asistencia</button>
+        <button onclick="irPantalla('info')" class="boton bg-gray-100 text-primario">¿Cómo funciona?</button>
     </div>
 </div>
 
 <!-- 3. MAPA Y BUSCADOR -->
-<div id="mapa" class="pantalla">
+<div id="pantalla-mapa" class="pantalla">
     <div class="cabecera">
-        <button onclick="irA('menu')" class="text-2xl mr-4"><i class="fa fa-arrow-left"></i></button>
+        <button onclick="irPantalla('menu')" class="text-2xl mr-4"><i class="fa fa-arrow-left"></i></button>
         <h2 class="text-xl">Buses accesibles cercanos</h2>
     </div>
 
@@ -70,7 +81,7 @@
         </div>
     </div>
 
-    <div id="mapaAcces"></div>
+    <div id="contenedor-mapa"></div>
 
     <div class="caja">
         <h3 class="font-bold text-lg mb-3">Próximas unidades</h3>
@@ -100,7 +111,7 @@
 <!-- 4. SOLICITUD -->
 <div id="solicitud" class="pantalla">
     <div class="cabecera">
-        <button onclick="irA('menu')" class="text-2xl mr-4"><i class="fa fa-arrow-left"></i></button>
+        <button onclick="irPantalla('menu')" class="text-2xl mr-4"><i class="fa fa-arrow-left"></i></button>
         <h2 class="text-xl">Solicitar asistencia</h2>
     </div>
     <div class="caja max-w-md mx-auto">
@@ -122,7 +133,7 @@
 <!-- 5. INFORMACIÓN -->
 <div id="info" class="pantalla">
     <div class="cabecera">
-        <button onclick="irA('menu')" class="text-2xl mr-4"><i class="fa fa-arrow-left"></i></button>
+        <button onclick="irPantalla('menu')" class="text-2xl mr-4"><i class="fa fa-arrow-left"></i></button>
         <h2 class="text-xl">¿Cómo funciona?</h2>
     </div>
     <div class="caja max-w-md mx-auto">
@@ -139,49 +150,52 @@
         <i class="fa fa-check-circle text-6xl text-exito mb-4"></i>
         <h2 class="text-2xl font-bold mb-3">¡Solicitud enviada!</h2>
         <p class="text-gray-600 mb-6">El conductor ya recibió tu aviso y te esperará.</p>
-        <button onclick="irA('menu')" class="boton boton-azul">Volver al menú</button>
+        <button onclick="irPantalla('menu')" class="boton boton-azul">Volver al menú</button>
     </div>
 </div>
 
 <script>
-let mapa;
+let mapaLeaflet;
 let marcadorUsuario;
 
-// CAMBIAR PANTALLAS
-function irA(id) {
+// FUNCIÓN DE CAMBIO DE PANTALLAS SIN CONFUSIONES
+function irPantalla(idPantalla) {
+    console.log("Cambiando a:", idPantalla);
+    // OCULTA TODAS
     document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
-    document.getElementById(id).classList.add('activa');
-    if(id === 'mapa' && !mapa) cargarMapa();
+    // MUESTRA LA NUEVA
+    document.getElementById(idPantalla).classList.add('activa');
+    // CARGA MAPA SI CORRESPONDE
+    if(idPantalla === 'pantalla-mapa' && !mapaLeaflet) iniciarMapa();
 }
 
 // INICIAR MAPA
-function cargarMapa() {
-    mapa = L.map('mapaAcces').setView([-0.1807, -78.4678], 13);
+function iniciarMapa() {
+    mapaLeaflet = L.map('contenedor-mapa').setView([-0.1807, -78.4678], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© AccesBus | OpenStreetMap'
-    }).addTo(mapa);
-    L.marker([-0.1820, -78.4690]).addTo(mapa).bindPopup('Ruta 12 ✅ Con rampa');
-    L.marker([-0.1790, -78.4650]).addTo(mapa).bindPopup('Ruta 05 ✅ Con rampa');
+    }).addTo(mapaLeaflet);
+    L.marker([-0.1820, -78.4690]).addTo(mapaLeaflet).bindPopup('Ruta 12 ✅ Con rampa');
+    L.marker([-0.1790, -78.4650]).addTo(mapaLeaflet).bindPopup('Ruta 05 ✅ Con rampa');
 }
 
-// BUSCAR PARADAS/UBICACIÓN
+// BUSCAR PARADAS
 function buscarParadas() {
     const lugar = document.getElementById('ubicacionBuscar').value.trim();
     if(!lugar) {
         alert("Escribe tu ubicación o parada para buscar");
         return;
     }
-    // Simulación de búsqueda (se puede conectar a API en el futuro)
-    alert(`Buscando paradas cercanas a: ${lugar}\nSe mostrarán las rutas disponibles en la zona.`);
-    mapa.setView([-0.1807, -78.4678], 14);
-    if(marcadorUsuario) mapa.removeLayer(marcadorUsuario);
-    marcadorUsuario = L.marker([-0.1807, -78.4678], {icon: L.icon({iconUrl: 'https://cdn-icons-png.flaticon.com/512/149/149060.png', iconSize: [32,32]})}).addTo(mapa).bindPopup(`Tu ubicación: ${lugar}`);
+    alert(`Buscando paradas cercanas a: ${lugar}`);
+    mapaLeaflet.setView([-0.1807, -78.4678], 14);
+    if(marcadorUsuario) mapaLeaflet.removeLayer(marcadorUsuario);
+    marcadorUsuario = L.marker([-0.1807, -78.4678]).addTo(mapaLeaflet).bindPopup(`Tu ubicación: ${lugar}`);
 }
 
-// SELECCIONAR RUTA Y MOSTRARLA EN EL MAPA
-function seleccionarRuta(nombreRuta, lat, lon) {
-    mapa.setView([lat, lon], 15);
-    L.popup().setLatLng([lat, lon]).setContent(nombreRuta).openOn(mapa);
+// SELECCIONAR RUTA
+function seleccionarRuta(nombre, lat, lon) {
+    mapaLeaflet.setView([lat, lon], 15);
+    L.popup().setLatLng([lat, lon]).setContent(nombre).openOn(mapaLeaflet);
 }
 
 // ENVIAR SOLICITUD
@@ -207,12 +221,12 @@ async function enviar() {
         const json = await res.json();
         if(json.exito) {
             window.open(json.enlaceWhatsApp, '_blank');
-            irA('confirmacion');
+            irPantalla('confirmacion');
         } else {
-            alert("Error al enviar la solicitud");
+            alert("Error al enviar");
         }
     } catch {
-        irA('confirmacion');
+        irPantalla('confirmacion');
     }
 }
 </script>
