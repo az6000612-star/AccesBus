@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AccesBus - Machala</title>
+    <title>AccesBus - El Oro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -39,6 +39,8 @@
         .ruta-item:hover { border-color: #165DFF; background: rgba(22,93,255,0.05); }
         .buscador-fila { display: flex; gap: 10px; align-items: center; }
         .buscador-fila input { flex: 1; margin: 0; }
+        .ciudad-boton { padding: 16px; font-size: 18px; border: 2px solid #E5E6EB; border-radius: 12px; background: white; cursor: pointer; transition: all 0.2s; }
+        .ciudad-boton.activa { border-color: #165DFF; background: rgba(22,93,255,0.1); color: #165DFF; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -46,8 +48,8 @@
 <!-- 1. PORTADA -->
 <div id="portada" class="pantalla activa portada">
     <i class="fa fa-bus text-6xl mb-4"></i>
-    <h1 class="text-4xl font-bold mb-2">AccesBus - Machala</h1>
-    <p class="text-xl mb-8">Movilidad inclusiva al alcance de todos</p>
+    <h1 class="text-4xl font-bold mb-2">AccesBus - El Oro</h1>
+    <p class="text-xl mb-8">Movilidad inclusiva en Machala y Zaruma</p>
     <button onclick="irPantalla('menu')" class="boton bg-white text-primario">INICIAR</button>
 </div>
 
@@ -56,27 +58,44 @@
     <div class="text-center mb-8">
         <i class="fa fa-bus text-5xl text-primario mb-4"></i>
         <h2 class="text-3xl font-bold text-primario">Menú Principal</h2>
-        <p class="text-gray-600 mt-2">Ciudad de Machala</p>
+        <p class="text-gray-600 mt-2">Provincia de El Oro</p>
     </div>
     <div class="max-w-md mx-auto">
-        <button onclick="irPantalla('pantalla-mapa')" class="boton boton-azul">Ver buses accesibles</button>
+        <button onclick="irPantalla('seleccion-ciudad')" class="boton boton-azul">Ver buses accesibles</button>
         <button onclick="irPantalla('solicitud')" class="boton boton-verde">Solicitar asistencia</button>
         <button onclick="irPantalla('info')" class="boton bg-gray-100 text-primario">¿Cómo funciona?</button>
     </div>
 </div>
 
-<!-- 3. MAPA Y BUSCADOR - MACHALA -->
-<div id="pantalla-mapa" class="pantalla">
+<!-- 3. SELECCIÓN DE CIUDAD -->
+<div id="seleccion-ciudad" class="pantalla">
     <div class="cabecera">
         <button onclick="irPantalla('menu')" class="text-2xl mr-4"><i class="fa fa-arrow-left"></i></button>
-        <h2 class="text-xl">Buses accesibles - Machala</h2>
+        <h2 class="text-xl">Elige tu ciudad</h2>
+    </div>
+    <div class="caja max-w-md mx-auto mt-6">
+        <h3 class="font-bold text-lg mb-4">Ciudades disponibles:</h3>
+        <button onclick="cargarCiudad('machala')" class="ciudad-boton w-full text-left mb-3">
+            <i class="fa fa-map-marker mr-2"></i> Machala
+        </button>
+        <button onclick="cargarCiudad('zaruma')" class="ciudad-boton w-full text-left">
+            <i class="fa fa-map-marker mr-2"></i> Zaruma
+        </button>
+    </div>
+</div>
+
+<!-- 4. MAPA Y RUTAS -->
+<div id="pantalla-mapa" class="pantalla">
+    <div class="cabecera">
+        <button onclick="irPantalla('seleccion-ciudad')" class="text-2xl mr-4"><i class="fa fa-arrow-left"></i></button>
+        <h2 id="titulo-ciudad" class="text-xl">Buses accesibles</h2>
     </div>
 
-    <!-- BUSCADOR DE PARADAS DE MACHALA -->
+    <!-- BUSCADOR -->
     <div class="caja">
-        <h3 class="font-bold text-lg mb-3"><i class="fa fa-search mr-2"></i>Busca tu parada en Machala</h3>
+        <h3 class="font-bold text-lg mb-3"><i class="fa fa-search mr-2"></i>Busca tu parada</h3>
         <div class="buscador-fila">
-            <input type="text" id="ubicacionBuscar" placeholder="Ej: Av. 25 de Junio, Terminal Terrestre, El Cambio...">
+            <input type="text" id="ubicacionBuscar" placeholder="Escribe tu parada o ubicación...">
             <button onclick="buscarParadas()" class="boton boton-azul boton-buscar">Buscar</button>
         </div>
     </div>
@@ -84,48 +103,25 @@
     <div id="contenedor-mapa"></div>
 
     <div class="caja">
-        <h3 class="font-bold text-lg mb-3">Próximas unidades en Machala</h3>
-        <div id="listaRutas">
-            <div class="ruta-item" onclick="seleccionarRuta('Ruta 1 - Terminal → Centro', -3.2583, -79.9659)">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="font-bold">Ruta 1 - Terminal → Centro</p>
-                        <p class="text-sm text-gray-600 mt-1"><i class="fa fa-check-circle text-exito mr-1"></i> Rampa disponible</p>
-                    </div>
-                    <p class="font-bold text-alerta">3 min</p>
-                </div>
-            </div>
-            <div class="ruta-item" onclick="seleccionarRuta('Ruta 3 - Puerto → El Cambio', -3.2650, -79.9720)">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="font-bold">Ruta 3 - Puerto → El Cambio</p>
-                        <p class="text-sm text-gray-600 mt-1"><i class="fa fa-check-circle text-exito mr-1"></i> Rampa disponible</p>
-                    </div>
-                    <p class="font-bold text-alerta">6 min</p>
-                </div>
-            </div>
-            <div class="ruta-item" onclick="seleccionarRuta('Ruta 7 - Av. 25 de Junio → Urb. Santa Rosa', -3.2520, -79.9580)">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="font-bold">Ruta 7 - Av. 25 de Junio → Santa Rosa</p>
-                        <p class="text-sm text-gray-600 mt-1"><i class="fa fa-check-circle text-exito mr-1"></i> Rampa disponible</p>
-                    </div>
-                    <p class="font-bold text-alerta">8 min</p>
-                </div>
-            </div>
-        </div>
+        <h3 class="font-bold text-lg mb-3">Próximas unidades</h3>
+        <div id="listaRutas"></div>
     </div>
 </div>
 
-<!-- 4. SOLICITUD -->
+<!-- 5. SOLICITUD -->
 <div id="solicitud" class="pantalla">
     <div class="cabecera">
         <button onclick="irPantalla('menu')" class="text-2xl mr-4"><i class="fa fa-arrow-left"></i></button>
-        <h2 class="text-xl">Solicitar asistencia - Machala</h2>
+        <h2 class="text-xl">Solicitar asistencia</h2>
     </div>
     <div class="caja max-w-md mx-auto">
         <input type="text" id="nombre" placeholder="Tu nombre completo">
-        <input type="text" id="ubicacion" placeholder="Tu parada o ubicación en Machala">
+        <select id="ciudadSolicitud" required>
+            <option value="">Elige tu ciudad</option>
+            <option value="Machala">Machala</option>
+            <option value="Zaruma">Zaruma</option>
+        </select>
+        <input type="text" id="ubicacion" placeholder="Tu parada o ubicación">
         <input type="text" id="destino" placeholder="Tu destino">
         <input type="text" id="ruta" placeholder="Ruta que necesitas">
         <select id="tipo">
@@ -139,26 +135,26 @@
     </div>
 </div>
 
-<!-- 5. INFORMACIÓN -->
+<!-- 6. INFORMACIÓN -->
 <div id="info" class="pantalla">
     <div class="cabecera">
         <button onclick="irPantalla('menu')" class="text-2xl mr-4"><i class="fa fa-arrow-left"></i></button>
-        <h2 class="text-xl">¿Cómo funciona en Machala?</h2>
+        <h2 class="text-xl">¿Cómo funciona?</h2>
     </div>
     <div class="caja max-w-md mx-auto">
-        <p class="mb-3">1. Busca tu parada en la ciudad de Machala.</p>
-        <p class="mb-3">2. Selecciona la ruta accesible que necesites.</p>
-        <p class="mb-3">3. Envía tu solicitud: llega directamente al número de la administradora <strong>0981033307</strong>.</p>
+        <p class="mb-3">1. Elige la ciudad: Machala o Zaruma.</p>
+        <p class="mb-3">2. Busca tu parada y revisa las rutas accesibles.</p>
+        <p class="mb-3">3. Envía tu solicitud: llega directamente al número <strong>0981033307</strong>.</p>
         <p>El conductor recibirá el aviso y te esperará en tu parada.</p>
     </div>
 </div>
 
-<!-- 6. CONFIRMACIÓN -->
+<!-- 7. CONFIRMACIÓN -->
 <div id="confirmacion" class="pantalla flex flex-col justify-center items-center p-6">
     <div class="caja max-w-md w-full text-center">
         <i class="fa fa-check-circle text-6xl text-exito mb-4"></i>
         <h2 class="text-2xl font-bold mb-3">¡Solicitud enviada!</h2>
-        <p class="text-gray-600 mb-6">El equipo de AccesBus Machala ya recibió tu aviso.</p>
+        <p class="text-gray-600 mb-6">El equipo de AccesBus ya recibió tu aviso.</p>
         <button onclick="irPantalla('menu')" class="boton boton-azul">Volver al menú</button>
     </div>
 </div>
@@ -166,63 +162,121 @@
 <script>
 let mapaLeaflet;
 let marcadorUsuario;
-// NÚMERO DE TU COMPAÑERA
+let ciudadActual = "";
 const NUMERO_WHATSAPP = "593981033307";
+
+// DATOS DE CIUDADES
+const CIUDADES = {
+    machala: {
+        nombre: "Machala",
+        lat: -3.2583,
+        lon: -79.9659,
+        rutas: [
+            {nombre: "Ruta 1 - Terminal → Centro", tiempo: "3 min", lat: -3.2583, lon: -79.9659},
+            {nombre: "Ruta 3 - Puerto → El Cambio", tiempo: "6 min", lat: -3.2650, lon: -79.9720},
+            {nombre: "Ruta 7 - Av. 25 de Junio → Santa Rosa", tiempo: "8 min", lat: -3.2520, lon: -79.9580}
+        ]
+    },
+    zaruma: {
+        nombre: "Zaruma",
+        lat: -3.6867,
+        lon: -79.6167,
+        rutas: [
+            {nombre: "Ruta A - Terminal → Centro Histórico", tiempo: "4 min", lat: -3.6867, lon: -79.6167},
+            {nombre: "Ruta B - El Tambo → Mercado Central", tiempo: "7 min", lat: -3.6820, lon: -79.6120},
+            {nombre: "Ruta C - Vía Loja → Barrio La Paz", tiempo: "9 min", lat: -3.6910, lon: -79.6210}
+        ]
+    }
+};
 
 // CAMBIAR PANTALLAS
 function irPantalla(idPantalla) {
     document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
     document.getElementById(idPantalla).classList.add('activa');
-    if(idPantalla === 'pantalla-mapa' && !mapaLeaflet) iniciarMapa();
 }
 
-// MAPA CENTRADO EN MACHALA
-function iniciarMapa() {
-    mapaLeaflet = L.map('contenedor-mapa').setView([-3.2583, -79.9659], 13);
+// CARGAR DATOS DE LA CIUDAD ELEGIDA
+function cargarCiudad(idCiudad) {
+    ciudadActual = idCiudad;
+    const ciudad = CIUDADES[idCiudad];
+    document.getElementById('titulo-ciudad').textContent = `Buses accesibles - ${ciudad.nombre}`;
+    irPantalla('pantalla-mapa');
+    setTimeout(() => {
+        if(mapaLeaflet) mapaLeaflet.remove();
+        iniciarMapa(ciudad);
+        cargarListaRutas(ciudad.rutas);
+    }, 100);
+}
+
+// INICIAR MAPA
+function iniciarMapa(ciudad) {
+    mapaLeaflet = L.map('contenedor-mapa').setView([ciudad.lat, ciudad.lon], 14);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© AccesBus Machala | OpenStreetMap'
+        attribution: `© AccesBus ${ciudad.nombre} | OpenStreetMap`
     }).addTo(mapaLeaflet);
-    // MARCADORES DE RUTAS DE MACHALA
-    L.marker([-3.2583, -79.9659]).addTo(mapaLeaflet).bindPopup('Ruta 1 ✅ Terminal → Centro');
-    L.marker([-3.2650, -79.9720]).addTo(mapaLeaflet).bindPopup('Ruta 3 ✅ Puerto → El Cambio');
-    L.marker([-3.2520, -79.9580]).addTo(mapaLeaflet).bindPopup('Ruta 7 ✅ Av. 25 de Junio');
+    ciudad.rutas.forEach(r => {
+        L.marker([r.lat, r.lon]).addTo(mapaLeaflet).bindPopup(`${r.nombre} ✅ Con rampa`);
+    });
 }
 
-// BUSCAR PARADAS EN MACHALA
+// CARGAR LISTA DE RUTAS
+function cargarListaRutas(rutas) {
+    const lista = document.getElementById('listaRutas');
+    lista.innerHTML = "";
+    rutas.forEach(r => {
+        const item = document.createElement('div');
+        item.className = "ruta-item";
+        item.onclick = () => seleccionarRuta(r.nombre, r.lat, r.lon);
+        item.innerHTML = `
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="font-bold">${r.nombre}</p>
+                    <p class="text-sm text-gray-600 mt-1"><i class="fa fa-check-circle text-exito mr-1"></i> Rampa disponible</p>
+                </div>
+                <p class="font-bold text-alerta">${r.tiempo}</p>
+            </div>
+        `;
+        lista.appendChild(item);
+    });
+}
+
+// BUSCAR PARADAS
 function buscarParadas() {
     const lugar = document.getElementById('ubicacionBuscar').value.trim();
     if(!lugar) {
-        alert("Escribe tu parada o ubicación en Machala");
+        alert("Escribe tu parada o ubicación en " + CIUDADES[ciudadActual].nombre);
         return;
     }
-    alert(`Buscando paradas cercanas a: ${lugar}, Machala`);
-    mapaLeaflet.setView([-3.2583, -79.9659], 14);
+    const ciudad = CIUDADES[ciudadActual];
+    alert(`Buscando paradas cercanas a: ${lugar}, ${ciudad.nombre}`);
+    mapaLeaflet.setView([ciudad.lat, ciudad.lon], 15);
     if(marcadorUsuario) mapaLeaflet.removeLayer(marcadorUsuario);
-    marcadorUsuario = L.marker([-3.2583, -79.9659]).addTo(mapaLeaflet).bindPopup(`Tu ubicación: ${lugar}`);
+    marcadorUsuario = L.marker([ciudad.lat, ciudad.lon]).addTo(mapaLeaflet).bindPopup(`Tu ubicación: ${lugar}`);
 }
 
 // SELECCIONAR RUTA
 function seleccionarRuta(nombre, lat, lon) {
-    mapaLeaflet.setView([lat, lon], 15);
+    mapaLeaflet.setView([lat, lon], 16);
     L.popup().setLatLng([lat, lon]).setContent(nombre).openOn(mapaLeaflet);
 }
 
-// ENVIAR SOLICITUD AL NÚMERO DE TU COMPAÑERA
+// ENVIAR SOLICITUD
 async function enviar() {
     const datos = {
         nombre: document.getElementById('nombre').value,
+        ciudad: document.getElementById('ciudadSolicitud').value,
         ubicacion: document.getElementById('ubicacion').value,
         destino: document.getElementById('destino').value,
         ruta: document.getElementById('ruta').value,
         tipo: document.getElementById('tipo').value,
         detalles: document.getElementById('detalles').value
     };
-    if(!datos.nombre || !datos.ubicacion || !datos.ruta || !datos.tipo) {
+    if(!datos.nombre || !datos.ciudad || !datos.ubicacion || !datos.ruta || !datos.tipo) {
         alert("Completa todos los campos obligatorios");
         return;
     }
-    // MENSAJE PARA WHATSAPP
-    const mensaje = `*🚌 SOLICITUD ACCESBUS - MACHALA*%0A
+    const mensaje = `*🚌 SOLICITUD ACCESBUS - EL ORO*%0A
+🏙️ Ciudad: ${datos.ciudad}%0A
 👤 Usuario: ${datos.nombre}%0A
 📍 Ubicación/Parada: ${datos.ubicacion}%0A
 🎯 Destino: ${datos.destino}%0A
