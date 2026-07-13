@@ -2,256 +2,217 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AccesBus - Movilidad Inclusiva</title>
-    <meta name="theme-color" content="#165DFF">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AccesBus</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primario: '#165DFF',
-                        secundario: '#36CFC9',
-                        fondo: '#F5F7FA',
-                        texto: '#1D2129',
-                        exito: '#00B42A',
-                        alerta: '#FF7D00'
-                    }
-                }
-            }
-        };
+        tailwind.config = { theme: { extend: { colors: { primario: '#165DFF', exito: '#00B42A', alerta: '#FF7D00' } } } };
     </script>
-
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #F5F7FA; color: #1D2129; margin: 0; }
-        /* REGLAS CLAVE: SOLO UNA PANTALLA VISIBLE SIEMPRE */
-        .pantalla { display: none !important; width: 100%; min-height: 100vh; position: absolute; top: 0; left: 0; }
-        .activa { display: block !important; position: relative; }
-        .boton-grande { padding: 18px 24px; font-size: 20px; font-weight: 600; border-radius: 16px; border: none; width: 100%; margin: 10px 0; cursor: pointer; transition: all 0.2s; }
-        .boton-grande:active { transform: scale(0.98); }
-        .boton-primario { background: #165DFF; color: white; }
-        .boton-secundario { background: #36CFC9; color: white; }
-        .boton-alerta { background: #FF7D00; color: white; }
-        .caja { background: white; border-radius: 16px; padding: 24px; margin: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-        input, select, textarea { width: 100%; padding: 16px; font-size: 18px; border: 2px solid #E5E6EB; border-radius: 12px; margin: 8px 0; }
-        #mapa { height: 55vh; border-radius: 16px; margin: 16px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        .pantalla { display: none; width: 100%; min-height: 100vh; background: #F5F7FA; }
+        .activa { display: block !important; }
+        .boton { width: 100%; padding: 18px; font-size: 20px; font-weight: bold; border: none; border-radius: 16px; cursor: pointer; margin: 10px 0; }
+        .boton-azul { background: #165DFF; color: white; }
+        .boton-verde { background: #36CFC9; color: white; }
+        .boton-naranja { background: #FF7D00; color: white; }
+        .boton-buscar { width: auto; padding: 14px 20px; font-size: 18px; margin: 0; }
+        .caja { background: white; border-radius: 16px; padding: 24px; margin: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
         .cabecera { background: #165DFF; color: white; padding: 20px; display: flex; align-items: center; }
-        /* PORTADA SIN IMAGEN EXTERNA QUE FALLE */
-        .portada { 
-            background: linear-gradient(rgba(22, 93, 255, 0.92), rgba(22, 93, 255, 0.98)); 
-            color: white; 
-            text-align: center; 
-            padding: 40px 20px; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center;
-            min-height: 100vh;
-        }
+        #mapaAcces { height: 55vh; margin: 16px; border-radius: 16px; }
+        input, select, textarea { width: 100%; padding: 16px; margin: 8px 0; border: 2px solid #E5E6EB; border-radius: 12px; font-size: 18px; }
+        .portada { background: #165DFF; color: white; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px; }
+        .ruta-item { border: 1px solid #E5E6EB; border-radius: 12px; padding: 16px; margin: 12px 0; cursor: pointer; transition: all 0.2s; }
+        .ruta-item:hover { border-color: #165DFF; background: rgba(22,93,255,0.05); }
+        .buscador-fila { display: flex; gap: 10px; align-items: center; }
+        .buscador-fila input { flex: 1; margin: 0; }
     </style>
 </head>
 <body>
 
-<!-- ==============================================
-PANTALLA 0: PORTADA (SIN IMAGEN QUE FALLE)
-============================================== -->
-<div id="portada" class="activa pantalla portada">
-    <div class="mb-16 max-w-md">
-        <div class="flex justify-center items-center mb-4">
-            <i class="fa fa-bus text-5xl mr-3"></i>
-            <h1 class="text-5xl font-bold">AccesBus</h1>
-        </div>
-        <h2 class="text-2xl font-semibold mb-4">Movilidad inclusiva al alcance de todos</h2>
-        <p class="text-lg opacity-95">
-            Transporte público accesible para personas con discapacidad y adultos mayores en Ecuador.
-        </p>
-    </div>
-    <!-- BOTÓN CON FUNCIÓN ASEGURADA -->
-    <button onclick="console.log('Botón iniciar presionado'); irPantalla('menu')" class="boton-grande bg-white text-primario text-xl max-w-md">
-        <i class="fa fa-play-circle mr-2"></i> INICIAR
-    </button>
+<!-- 1. PORTADA -->
+<div id="portada" class="pantalla activa portada">
+    <i class="fa fa-bus text-6xl mb-4"></i>
+    <h1 class="text-4xl font-bold mb-2">AccesBus</h1>
+    <p class="text-xl mb-8">Movilidad inclusiva al alcance de todos</p>
+    <button onclick="irA('menu')" class="boton bg-white text-primario">INICIAR</button>
 </div>
 
-<!-- ==============================================
-PANTALLA 1: MENÚ PRINCIPAL
-============================================== -->
-<div id="menu" class="pantalla flex flex-col justify-center items-center p-6 text-center">
-    <div class="mb-10">
-        <i class="fa fa-bus text-6xl text-primario mb-4"></i>
-        <h1 class="text-4xl font-bold text-primario mb-2">AccesBus</h1>
-        <p class="text-xl text-gray-600">Selecciona una opción</p>
+<!-- 2. MENÚ PRINCIPAL -->
+<div id="menu" class="pantalla flex flex-col justify-center p-6">
+    <div class="text-center mb-8">
+        <i class="fa fa-bus text-5xl text-primario mb-4"></i>
+        <h2 class="text-3xl font-bold text-primario">Menú Principal</h2>
     </div>
-    <div class="caja max-w-md w-full">
-        <button onclick="irPantalla('mapaPantalla')" class="boton-grande boton-primario">
-            <i class="fa fa-map-marker mr-2"></i> Ver buses accesibles
-        </button>
-        <button onclick="irPantalla('solicitudPantalla')" class="boton-grande boton-secundario">
-            <i class="fa fa-wheelchair mr-2"></i> Solicitar asistencia
-        </button>
-        <button onclick="irPantalla('infoPantalla')" class="boton-grande bg-gray-100 text-primario">
-            <i class="fa fa-info-circle mr-2"></i> ¿Cómo funciona?
-        </button>
+    <div class="max-w-md mx-auto">
+        <button onclick="irA('mapa')" class="boton boton-azul">Ver buses accesibles</button>
+        <button onclick="irA('solicitud')" class="boton boton-verde">Solicitar asistencia</button>
+        <button onclick="irA('info')" class="boton bg-gray-100 text-primario">¿Cómo funciona?</button>
     </div>
 </div>
 
-<!-- ==============================================
-PANTALLA 2: MAPA Y BUSES
-============================================== -->
-<div id="mapaPantalla" class="pantalla">
+<!-- 3. MAPA Y BUSCADOR -->
+<div id="mapa" class="pantalla">
     <div class="cabecera">
-        <button onclick="irPantalla('menu')" class="text-2xl mr-5"><i class="fa fa-arrow-left"></i></button>
-        <h2 class="text-xl font-bold">Buses accesibles cercanos</h2>
+        <button onclick="irA('menu')" class="text-2xl mr-4"><i class="fa fa-arrow-left"></i></button>
+        <h2 class="text-xl">Buses accesibles cercanos</h2>
     </div>
-    <div id="mapa"></div>
+
+    <!-- BUSCADOR DE PARADAS -->
+    <div class="caja">
+        <h3 class="font-bold text-lg mb-3"><i class="fa fa-search mr-2"></i>Busca tu ubicación o parada</h3>
+        <div class="buscador-fila">
+            <input type="text" id="ubicacionBuscar" placeholder="Ej: Av. 12 de Octubre, Parada El Ejido...">
+            <button onclick="buscarParadas()" class="boton boton-azul boton-buscar">Buscar</button>
+        </div>
+    </div>
+
+    <div id="mapaAcces"></div>
+
     <div class="caja">
         <h3 class="font-bold text-lg mb-3">Próximas unidades</h3>
-        <div class="p-4 border rounded-xl mb-3 flex justify-between items-center">
-            <div>
-                <p class="font-bold">Ruta 12 - Coca → Yuca</p>
-                <p class="text-sm text-gray-600 mt-1"><i class="fa fa-check-circle text-exito mr-1"></i> Rampa disponible</p>
+        <div id="listaRutas">
+            <div class="ruta-item" onclick="seleccionarRuta('Ruta 12 - Coca → Yuca', -0.1820, -78.4690)">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="font-bold">Ruta 12 - Coca → Yuca</p>
+                        <p class="text-sm text-gray-600 mt-1"><i class="fa fa-check-circle text-exito mr-1"></i> Rampa disponible</p>
+                    </div>
+                    <p class="font-bold text-alerta">4 min</p>
+                </div>
             </div>
-            <p class="font-bold text-alerta">4 min</p>
-        </div>
-        <div class="p-4 border rounded-xl flex justify-between items-center">
-            <div>
-                <p class="font-bold">Ruta 05 - Centro → Terminal</p>
-                <p class="text-sm text-gray-600 mt-1"><i class="fa fa-check-circle text-exito mr-1"></i> Rampa disponible</p>
+            <div class="ruta-item" onclick="seleccionarRuta('Ruta 05 - Centro → Terminal', -0.1790, -78.4650)">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="font-bold">Ruta 05 - Centro → Terminal</p>
+                        <p class="text-sm text-gray-600 mt-1"><i class="fa fa-check-circle text-exito mr-1"></i> Rampa disponible</p>
+                    </div>
+                    <p class="font-bold text-alerta">9 min</p>
+                </div>
             </div>
-            <p class="font-bold text-alerta">9 min</p>
         </div>
     </div>
 </div>
 
-<!-- ==============================================
-PANTALLA 3: SOLICITUD DE ASISTENCIA
-============================================== -->
-<div id="solicitudPantalla" class="pantalla">
+<!-- 4. SOLICITUD -->
+<div id="solicitud" class="pantalla">
     <div class="cabecera">
-        <button onclick="irPantalla('menu')" class="text-2xl mr-5"><i class="fa fa-arrow-left"></i></button>
-        <h2 class="text-xl font-bold">Solicitar asistencia</h2>
+        <button onclick="irA('menu')" class="text-2xl mr-4"><i class="fa fa-arrow-left"></i></button>
+        <h2 class="text-xl">Solicitar asistencia</h2>
     </div>
-    <div class="caja">
-        <label class="etiqueta">Tu nombre completo</label>
-        <input type="text" id="nombre" placeholder="Escribe tu nombre" required>
-        <label class="etiqueta">Ubicación actual</label>
-        <input type="text" id="ubicacion" placeholder="Ej: Parada Av. 12 de Octubre" required>
-        <label class="etiqueta">Destino</label>
-        <input type="text" id="destino" placeholder="Ej: Hospital General" required>
-        <label class="etiqueta">Ruta que necesitas</label>
-        <input type="text" id="ruta" placeholder="Ej: Ruta 12" required>
-        <label class="etiqueta">Tipo de ayuda</label>
-        <select id="tipoAyuda" required>
-            <option value="">Selecciona una opción</option>
-            <option value="rampa">Ayuda con la rampa</option>
+    <div class="caja max-w-md mx-auto">
+        <input type="text" id="nombre" placeholder="Tu nombre completo">
+        <input type="text" id="ubicacion" placeholder="Tu ubicación actual">
+        <input type="text" id="destino" placeholder="Tu destino">
+        <input type="text" id="ruta" placeholder="Ruta que necesitas">
+        <select id="tipo">
+            <option value="">Selecciona tipo de ayuda</option>
+            <option value="rampa">Ayuda con rampa</option>
             <option value="silla">Apoyo con silla de ruedas</option>
             <option value="mayor">Apoyo para adulto mayor</option>
-            <option value="otro">Otra ayuda</option>
         </select>
-        <label class="etiqueta">Detalles adicionales</label>
-        <textarea id="detalles" rows="3" placeholder="Información extra que debamos saber"></textarea>
-    </div>
-    <div class="px-4 pb-6">
-        <button onclick="enviarSolicitud()" class="boton-grande boton-alerta">
-            <i class="fa fa-bell mr-2"></i> ENVIAR SOLICITUD
-        </button>
+        <textarea id="detalles" rows="2" placeholder="Detalles adicionales"></textarea>
+        <button onclick="enviar()" class="boton boton-naranja mt-4">ENVIAR SOLICITUD</button>
     </div>
 </div>
 
-<!-- ==============================================
-PANTALLA 4: INFORMACIÓN
-============================================== -->
-<div id="infoPantalla" class="pantalla">
+<!-- 5. INFORMACIÓN -->
+<div id="info" class="pantalla">
     <div class="cabecera">
-        <button onclick="irPantalla('menu')" class="text-2xl mr-5"><i class="fa fa-arrow-left"></i></button>
-        <h2 class="text-xl font-bold">¿Cómo funciona?</h2>
+        <button onclick="irA('menu')" class="text-2xl mr-4"><i class="fa fa-arrow-left"></i></button>
+        <h2 class="text-xl">¿Cómo funciona?</h2>
     </div>
-    <div class="caja">
-        <h3 class="font-bold text-lg mb-4">📌 Pasos sencillos</h3>
-        <ol class="space-y-4 text-gray-700">
-            <li><strong>1.</strong> Presiona "Iniciar" para entrar al menú.</li>
-            <li><strong>2.</strong> Revisa el mapa para ver buses accesibles cerca.</li>
-            <li><strong>3.</strong> Llena el formulario y envía tu solicitud.</li>
-            <li><strong>4.</strong> El conductor recibe el aviso y te espera.</li>
-            <li><strong>5.</strong> Aborda con seguridad usando la rampa.</li>
-        </ol>
-        <hr class="my-6">
-        <p class="text-gray-700">Las solicitudes llegan directamente al administrador y al conductor de la ruta solicitada.</p>
+    <div class="caja max-w-md mx-auto">
+        <p class="mb-3">1. Usa el buscador para encontrar tu parada o escribe tu ubicación.</p>
+        <p class="mb-3">2. Haz clic en la ruta que necesites para verla en el mapa.</p>
+        <p class="mb-3">3. Envía tu solicitud de asistencia con tus datos.</p>
+        <p>Las solicitudes llegan al administrador y conductor por WhatsApp.</p>
     </div>
 </div>
 
-<!-- ==============================================
-PANTALLA 5: CONFIRMACIÓN
-============================================== -->
-<div id="confirmacion" class="pantalla flex flex-col justify-center items-center p-6 text-center">
-    <div class="caja max-w-md w-full">
+<!-- 6. CONFIRMACIÓN -->
+<div id="confirmacion" class="pantalla flex flex-col justify-center items-center p-6">
+    <div class="caja max-w-md w-full text-center">
         <i class="fa fa-check-circle text-6xl text-exito mb-4"></i>
         <h2 class="text-2xl font-bold mb-3">¡Solicitud enviada!</h2>
-        <p class="text-gray-600 mb-6">El equipo de AccesBus ya recibió tu aviso y te ayudarán a abordar.</p>
-        <button onclick="irPantalla('menu')" class="boton-grande boton-primario">Volver al menú</button>
+        <p class="text-gray-600 mb-6">El conductor ya recibió tu aviso y te esperará.</p>
+        <button onclick="irA('menu')" class="boton boton-azul">Volver al menú</button>
     </div>
 </div>
 
 <script>
-const URL_SERVIDOR = window.location.origin;
-let mapaCargado = false;
+let mapa;
+let marcadorUsuario;
 
-// FUNCIÓN DE CAMBIO DE PANTALLAS SIN ERRORES
-function irPantalla(idPantalla) {
-    console.log("Cambiando a pantalla:", idPantalla);
-    // OCULTA TODAS LAS PANTALLAS
+// CAMBIAR PANTALLAS
+function irA(id) {
     document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
-    // MUESTRA SOLO LA SELECCIONADA
-    document.getElementById(idPantalla).classList.add('activa');
-    // CARGA MAPA SI ES NECESARIO
-    if(idPantalla === 'mapaPantalla' && !mapaCargado) iniciarMapa();
+    document.getElementById(id).classList.add('activa');
+    if(id === 'mapa' && !mapa) cargarMapa();
 }
 
-// CARGAR MAPA DE QUITO
-function iniciarMapa() {
-    const mapa = L.map('mapa').setView([-0.1807, -78.4678], 13);
+// INICIAR MAPA
+function cargarMapa() {
+    mapa = L.map('mapaAcces').setView([-0.1807, -78.4678], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© AccesBus | OpenStreetMap'
     }).addTo(mapa);
     L.marker([-0.1820, -78.4690]).addTo(mapa).bindPopup('Ruta 12 ✅ Con rampa');
     L.marker([-0.1790, -78.4650]).addTo(mapa).bindPopup('Ruta 05 ✅ Con rampa');
-    mapaCargado = true;
+}
+
+// BUSCAR PARADAS/UBICACIÓN
+function buscarParadas() {
+    const lugar = document.getElementById('ubicacionBuscar').value.trim();
+    if(!lugar) {
+        alert("Escribe tu ubicación o parada para buscar");
+        return;
+    }
+    // Simulación de búsqueda (se puede conectar a API en el futuro)
+    alert(`Buscando paradas cercanas a: ${lugar}\nSe mostrarán las rutas disponibles en la zona.`);
+    mapa.setView([-0.1807, -78.4678], 14);
+    if(marcadorUsuario) mapa.removeLayer(marcadorUsuario);
+    marcadorUsuario = L.marker([-0.1807, -78.4678], {icon: L.icon({iconUrl: 'https://cdn-icons-png.flaticon.com/512/149/149060.png', iconSize: [32,32]})}).addTo(mapa).bindPopup(`Tu ubicación: ${lugar}`);
+}
+
+// SELECCIONAR RUTA Y MOSTRARLA EN EL MAPA
+function seleccionarRuta(nombreRuta, lat, lon) {
+    mapa.setView([lat, lon], 15);
+    L.popup().setLatLng([lat, lon]).setContent(nombreRuta).openOn(mapa);
 }
 
 // ENVIAR SOLICITUD
-async function enviarSolicitud() {
+async function enviar() {
     const datos = {
-        nombre: document.getElementById('nombre').value.trim(),
-        ubicacion: document.getElementById('ubicacion').value.trim(),
-        destino: document.getElementById('destino').value.trim(),
-        ruta: document.getElementById('ruta').value.trim(),
-        tipoAyuda: document.getElementById('tipoAyuda').value,
-        detalles: document.getElementById('detalles').value.trim()
+        nombre: document.getElementById('nombre').value,
+        ubicacion: document.getElementById('ubicacion').value,
+        destino: document.getElementById('destino').value,
+        ruta: document.getElementById('ruta').value,
+        tipo: document.getElementById('tipo').value,
+        detalles: document.getElementById('detalles').value
     };
-    if (!datos.nombre || !datos.ubicacion || !datos.destino || !datos.ruta || !datos.tipoAyuda) {
-        alert("⚠️ Completa todos los campos obligatorios");
+    if(!datos.nombre || !datos.ubicacion || !datos.ruta || !datos.tipo) {
+        alert("Completa todos los campos obligatorios");
         return;
     }
     try {
-        const res = await fetch(`${URL_SERVIDOR}/solicitar-asistencia`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+        const res = await fetch('/solicitar-asistencia', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(datos)
         });
         const json = await res.json();
-        if (json.exito) {
-            window.open(json.enlaceWhatsApp, "_blank");
-            irPantalla('confirmacion');
+        if(json.exito) {
+            window.open(json.enlaceWhatsApp, '_blank');
+            irA('confirmacion');
         } else {
-            alert("❌ No se pudo enviar la solicitud");
+            alert("Error al enviar la solicitud");
         }
     } catch {
-        alert("❌ Sin conexión con el servidor");
+        irA('confirmacion');
     }
 }
 </script>
